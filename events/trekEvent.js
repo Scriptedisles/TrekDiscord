@@ -129,7 +129,7 @@ module.exports = {
 
 			if (interaction.commandName === "stoptrek") {
 
-				if (interaction.user.id !== session.userId) {
+				if (interaction.user.id === session.userId) {
 					if (session.running) {
 						try {
 							await shutdown();
@@ -147,6 +147,12 @@ module.exports = {
 							log(e, "command")
 						}
 					}
+				}
+				else {
+					interaction.reply({
+						content: "You are not the owner of this Trek session.",
+						ephemeral: true
+					});
 				}
 			}
 
