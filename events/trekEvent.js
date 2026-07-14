@@ -127,6 +127,29 @@ module.exports = {
 				}, 60 * 60 * 1000);
 			}
 
+			if (interaction.commandName === "stoptrek") {
+
+				if (interaction.user.id !== session.userId) {
+					if (session.running) {
+						try {
+							await shutdown();
+						
+							const embed = new EmbedBuilder()
+							.setColor(0x750C00)
+							.setTitle('Trek Session Stopped')
+							.setDescription(`A Trek session has been stopped by ${userMention(interaction.user.id)}.`)
+							.setTimestamp();
+					
+							trekChannel.send({ embeds: [embed] });
+							
+							
+						} catch (e) {
+							log(e, "command")
+						}
+					}
+				}
+			}
+
 		}
 
 		if (interaction.isButton()) {
