@@ -11,14 +11,14 @@ module.exports = {
         interaction.deferReply();
 
         if (interaction.user.id !== session.userId) {
-            return interaction.reply({  
+            await interaction.reply({  
                 content: "You are not the owner of this Trek session.",
                 ephemeral: true
             });
         }
         else {
             if (!session.running) {
-                return interaction.reply({  
+                interaction.reply({  
                     content: "No active Trek session to stop.",
                     ephemeral: true
                 });
