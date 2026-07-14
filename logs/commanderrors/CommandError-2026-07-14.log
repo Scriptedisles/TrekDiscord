@@ -1,1 +1,11 @@
 [2026-07-14T00:13:02.685Z] [COMMANDERROR] TypeError: run is not a function
+[2026-07-14T00:14:19.635Z] [COMMANDERROR] ReferenceError: exec is not defined
+[2026-07-14T00:14:50.777Z] [COMMANDERROR] ReferenceError: exec is not defined
+[2026-07-14T00:15:14.194Z] [COMMANDERROR] Error: Command failed: pm2 start tunnel
+'pm2' is not recognized as an internal or external command,
+operable program or batch file.
+
+[2026-07-14T00:20:51.510Z] [COMMANDERROR] Error: Command failed: pm2 start tunnel
+'pm2' is not recognized as an internal or external command,
+operable program or batch file.
+

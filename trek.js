@@ -4,7 +4,8 @@ let session = {
         shutdownTimeout: null,
         userId: null
     }
-
+    
+const { exec } = require("child_process");
 
 module.exports = {
 
@@ -27,5 +28,20 @@ module.exports = {
         } catch {}
 
         console.log("Session shut down.");
-    }
+    },
+
+    run(command) {
+        return new Promise((resolve, reject) => {
+            exec(command, (err, stdout, stderr) => {
+                if (err) {
+                    console.error(stderr);
+                    reject(err);
+                    return;
+                }
+
+                console.log(stdout);
+                resolve(stdout);
+            });
+    });
+}
 }
