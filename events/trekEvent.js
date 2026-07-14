@@ -1,8 +1,32 @@
-const { Events, MessageFlags, Collector } = require('discord.js');
-const { session, run, shutdown } = require('../trek.js');
+const { Events, MessageFlags, Collector, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const { session, run } = require('../trek.js');
 const { log } = require('../logs/logging.js');
 const { exec } = require("child_process");
 
+async function shutdown() {
+    
+	try {
+
+        session.running = false;
+
+        clearTimeout(session.timeout);
+        clearTimeout(session.shutdownTimeout);
+
+        try {
+            await run("pm2 stop tunnel");
+        } catch {}
+
+        try {
+            await run("docker stop trek");
+        } catch {}
+
+        console.log("Session shut down.");
+	}
+	catch (e) {
+		log(e, "event");
+	}
+}
+      
 
 module.exports = {
 	name: Events.InteractionCreate,
@@ -11,6 +35,8 @@ module.exports = {
 	if (interaction.isChatInputCommand()) {
 
 			if (interaction.commandName === "starttrek") {
+
+				let client = interaction.client;
 
 				if (session.running) {
 					return interaction.reply({
@@ -70,7 +96,7 @@ module.exports = {
 						await shutdown();
 					}, 5 * 60 * 1000);
 
-				}, 60 * 1000);
+				}, 1000);
 			}
 
 		}
@@ -119,25 +145,28 @@ module.exports = {
 						await shutdown();
 					}, 5 * 60 * 1000);
 
-				}, 60 * 1000);
+				}, 1000);
+ 
 
-				return interaction.update({
-					content: "Session extended for another hour.",
-					components: []
-				});
+					return interaction.update({
+						content: "Session extended for another hour.",
+						components: []
+					});
+			
+			}		
 				
-				if (interaction.customId === "shutdown") {
+			if (interaction.customId === "shutdown") {
 
-				await shutdown();
+					await shutdown();
 
-				return interaction.update({
-					content: "Session has been shut down.",
-					components: []
-				});
-				}
+					return interaction.update({
+						content: "Session has been shut down.",
+						components: []
+					});
+			}
 
 
 			}
-			}
+			
 		},
 }
