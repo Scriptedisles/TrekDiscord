@@ -70,7 +70,7 @@ module.exports = {
 						await shutdown();
 					}, 5 * 60 * 1000);
 
-				}, 60 * 60 * 1000);
+				}, 60 * 1000);
 			}
 
 		}
@@ -119,7 +119,7 @@ module.exports = {
 						await shutdown();
 					}, 5 * 60 * 1000);
 
-				}, 60 * 60 * 1000);
+				}, 60 * 1000);
 
 				return interaction.update({
 					content: "Session extended for another hour.",
