@@ -1,4 +1,4 @@
-const { Events, MessageFlags, Collector, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const { Events, MessageFlags, Collector, ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, userMention } = require('discord.js');
 const { session, run } = require('../trek.js');
 const { log } = require('../logs/logging.js');
 const { exec } = require("child_process");
@@ -14,13 +14,16 @@ async function shutdown() {
 
         try {
             await run("pm2 stop tunnel");
-        } catch {}
+        } catch (e) {
+			log(e, "event");
+		}
 
         try {
             await run("docker stop trek");
-        } catch {}
+        } catch (e) {
+			log(e, "event");
+		}
 
-        console.log("Session shut down.");
 	}
 	catch (e) {
 		log(e, "event");
@@ -32,12 +35,14 @@ module.exports = {
 	name: Events.InteractionCreate,
 	async execute(interaction) {
 
+	let client = interaction.client
+	let trekChannel = client.channels.cache.get("1526399712494620733")
+
 	if (interaction.isChatInputCommand()) {
 
 			if (interaction.commandName === "starttrek") {
 
-				let client = interaction.client;
-
+				
 				if (session.running) {
 					return interaction.reply({
 						content: "A Trek session is already running.",
@@ -46,9 +51,18 @@ module.exports = {
 				}
 
 				await interaction.reply({
-					content: "Starting Trek session...",
+					content: "Starting Trek session... trek is accessable at <http://travel.breezeified.xyz>",
 					ephemeral: true
 				});
+
+				const embed = new EmbedBuilder()
+					.setColor(0x034428)
+					.setTitle('Trek Session Started')
+					.setDescription(`A Trek session has been started by ${userMention(interaction.user.id)}.`)
+					.setTimestamp()
+					.setURL('http://travel.breezeified.xyz');
+				
+				trekChannel.send({ embeds: [embed] });
 
 				session.running = true;
 				session.userId = interaction.user.id;
@@ -86,17 +100,31 @@ module.exports = {
 							.setStyle(ButtonStyle.Danger)
 					);
 
+					const newEmbed = new EmbedBuilder()
+						.setColor(0x286BD7)
+						.setTitle('Trek Session')
+						.setDescription(`Your Session has been running for 1 hour. Would you like to continue or shut it down? If you do nothing it will shut down in 5 minutes.`)
+						.setTimestamp();
+
 					await user.send({
-						content:
-							"Your Trek session has been running for 1 hour.\nWould you like to continue or shut it down?\nIf you do nothing it will shut down in 5 minutes.",
+						embeds: [newEmbed],
 						components: [row]
 					});
 
 					session.shutdownTimeout = setTimeout(async () => {
 						await shutdown();
+						
+						const embed = new EmbedBuilder()
+						.setColor(0xFF9901)
+						.setTitle('Trek Session Timedout')
+						.setDescription(`A Trek session has timed out.`)
+						.setTimestamp();
+					
+						trekChannel.send({ embeds: [embed] });
+
 					}, 5 * 60 * 1000);
 
-				}, 1000);
+				}, 60 * 60 * 1000);
 			}
 
 		}
@@ -135,17 +163,32 @@ module.exports = {
 							.setStyle(ButtonStyle.Danger)
 					);
 
+					const newEmbed = new EmbedBuilder()
+						.setColor(0x286BD7)
+						.setTitle('Trek Session')
+						.setDescription(`Your Session has been running for 1 hour. Would you like to continue or shut it down? If you do nothing it will shut down in 5 minutes.`)
+						.setTimestamp();
+
 					await interaction.user.send({
-						content:
-							"Another hour has passed.\nContinue or shut down?\nAutomatic shutdown in 5 minutes.",
+						embeds: [newEmbed],
 						components: [row]
 					});
+					const embed = new EmbedBuilder()
+						.setColor(0xFF9901)
+						.setTitle('Trek Session Timedout')
+						.setDescription(`A Trek session has timed out.`)
+						.setTimestamp();
+					
+					
 
 					session.shutdownTimeout = setTimeout(async () => {
 						await shutdown();
+						trekChannel.send({ embeds: [embed] });
 					}, 5 * 60 * 1000);
 
-				}, 1000);
+					
+
+				}, 60 * 60 * 1000);
  
 
 					return interaction.update({
@@ -157,16 +200,28 @@ module.exports = {
 				
 			if (interaction.customId === "shutdown") {
 
+					await interaction.deferUpdate();
+
 					await shutdown();
 
-					return interaction.update({
-						content: "Session has been shut down.",
-						components: []
+					const embed = new EmbedBuilder()
+					.setColor(0x750C00)
+					.setTitle('Trek Session Stopped')
+					.setDescription(`A Trek session has been stopped by ${userMention(interaction.user.id)}.`)
+					.setTimestamp();
+				
+					trekChannel.send({ embeds: [embed] });
+
+					
+					await interaction.editReply({
+							content: "Session has been shut down.",
+							embeds: [],
+							components: [],
+							flags: MessageFlags.Ephemeral
 					});
-			}
+			}	
 
-
-			}
+		}
 			
-		},
+	},
 }
